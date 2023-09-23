@@ -1,13 +1,27 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-	
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Size Checker</title>
 </head>
 <body>
-	Hello World!
-	你好世界
-	こんにちは！世界！
-	Hola, mundo!
-	Bonjour!
-</body>
+    <h1>Upload a file to check its size</h1>
+    <input type="file" id="fileInput" onchange="showFileSize()">
+    <p id="fileSizeDisplay"></p>
 
+    <script>
+        function showFileSize() {
+            const fileInput = document.getElementById('fileInput');
+            const fileSizeDisplay = document.getElementById('fileSizeDisplay');
+
+            if (fileInput.files.length > 0) {
+                const fileSize = fileInput.files[0].size;
+                fileSizeDisplay.textContent = `File size: ${fileSize} bytes`;
+            } else {
+                fileSizeDisplay.textContent = '';
+            }
+        }
+    </script>
+</body>
 </html>
