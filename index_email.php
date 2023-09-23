@@ -1,29 +1,29 @@
+<?php include("contactform.php"); ?>
+
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Size Checker</title>
-</head>
-<body>
-    <h1>Upload a file to check its size</h1>
-    <input type="file" id="fileInput" onchange="showFileSize()">
-    <p id="fileSizeDisplay"></p>
+<html>
+	<head>
+		
+		<title>PHP Email form</title>
+		
+		<meta name ="viewport" content ="width=device-width, initial-scale=1.0"> 
+		
+		<!--Bootstrap CSS CDN-->
+		<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+		<!---jQuery CDN-->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+		
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        
 
-    <script>
-        function showFileSize() {
-            const fileInput = document.getElementById('fileInput');
-            const fileSizeDisplay = document.getElementById('fileSizeDisplay');
+	</head>
 
-            if (fileInput.files.length > 0) {
-                const fileSize = fileInput.files[0].size;
-                fileSizeDisplay.textContent = `File size: ${fileSize} bytes`;
-            } else {
-                fileSizeDisplay.textContent = '';
-            }
-        }
-    </script>
-<h2 class="text-center large-gray-font">Contact</h2>
+	<body>
+			
+		<!-- container for Contact-->
+		<div class="container-fluid">
+			<div class ="Contact" id="ContactLink">
+				<h2 class="text-center large-gray-font">Contact</h2>
 				
 				<br/>
 				<br/>
@@ -86,7 +86,3 @@
 		
 	</body>
 </html>
-
-</body>
-</html><script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-

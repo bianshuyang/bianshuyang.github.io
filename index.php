@@ -1,44 +1,33 @@
-<?php
-	if (isset($_POST["submit"])) {
-		$name = $_POST['name'];
-		$email = $_POST['email'];
-		$message = $_POST['message'];
-		$human = intval($_POST['human']);
-		$from = $email; 
-		
-		// WARNING: Be sure to change this. This is the address that the email will be sent to
-		$to = 'shuyangbian@gmail.com'; 
-		
-		$subject = "Message from ".$name." ";
-		
-		$body = "From: $name\n E-Mail: $email\n Message:\n $message";
- 
-		// Check if name has been entered
-		if (!$_POST['name']) {
-			$errName = 'Please enter your name';
-		}
-		
-		// Check if email has been entered and is valid
-		if (!$_POST['email'] || !filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
-			$errEmail = 'Please enter a valid email address';
-		}
-		
-		//Check if message has been entered
-		if (!$_POST['message']) {
-			$errMessage = 'Please enter your message';
-		}
-		//Check if simple anti-bot test is correct
-		if ($human !== 5) {
-			$errHuman = 'Your anti-spam is incorrect';
-		}
- 
-// If there are no errors, send the email
-if (!$errName && !$errEmail && !$errMessage && !$errHuman) {
-	if (mail ($to, $subject, $body, $from)) {
-		$result='<div class="alert alert-success">Thank You! I will be in touch</div>';
-	} else {
-		$result='<div class="alert alert-danger">Sorry there was an error sending your message. Please try again later</div>';
-	}
-}
-	}
-?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Size Checker</title>
+</head>
+<body>
+    <h1>Upload a file to check its size</h1>
+    <input type="file" id="fileInput" onchange="showFileSize()">
+    <p id="fileSizeDisplay"></p>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script>
+        function showFileSize() {
+            const fileInput = document.getElementById('fileInput');
+            const fileSizeDisplay = document.getElementById('fileSizeDisplay');
+
+            if (fileInput.files.length > 0) {
+                const fileSize = fileInput.files[0].size;
+                fileSizeDisplay.textContent = `File size: ${fileSize} bytes`;
+            } else {
+                fileSizeDisplay.textContent = '';
+            }
+        }
+    </script>
+	<?php include 'contactform.php'?>
+    <?php include 'index_email.php'?>
+	</body>
+</html>
+
+</body>
+</html>
+
