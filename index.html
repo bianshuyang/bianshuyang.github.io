@@ -4,7 +4,46 @@
 <meta http-equiv=Content-Type content="text/html; charset=utf-8">
 <meta name=Generator content="Microsoft Word 15 (filtered)">
 <style>
-<!--
+
+
+
+@page {
+            size: A4;
+            margin: 0;
+        }
+
+        /* Container for the content */
+        .a4-container {
+            width: 21cm; /* A4 width in centimeters */
+            height: 29.7cm; /* A4 height in centimeters */
+            margin: 0 auto; /* Centers the container horizontally */
+            padding: 2cm; /* Optional padding inside the page */
+            box-sizing: border-box;
+            background-color: #f4f4f4; /* Optional background */
+        }
+
+        /* Optional: Adding a border around the container for visual clarity */
+        
+    /* Ensure no unwanted page breaks */
+          .a4-container:not(:last-child) {
+              page-break-after: always; /* Add page break after each page except the last */
+          }
+
+          /* Optional: Add borders to debug alignment */
+          .a4-container {
+              border: 1px solid #000; /* Debug border */
+          }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #e0e0e0;
+        }
+
+
  /* Font Definitions */
  @font-face
   {font-family:Wingdings;
@@ -62,16 +101,40 @@ div.WordSection1
   {margin-bottom:0in;}
 ul
   {margin-bottom:0in;}
--->
+
+
+.education-entry {
+        display: flex;
+        justify-content: space-between; /* Aligns text to both ends */
+        line-height: 1.5; /* Adjusts line height */
+        font-family: Times, serif; /* Matches your font */
+        font-size: 12pt; /* Matches your font size */
+    }
+
+    .education-entry .institution {
+        font-weight: bold; /* Highlight institution names */
+    }
+
+    .education-entry .dates {
+        white-space: nowrap; /* Prevents line breaks for dates */
+        margin-left: 0; 
+    }
+
 </style>
 
 </head>
 
+
 <body lang=EN-US link="#0563C1" vlink="#954F72" style='word-wrap:break-word;
 text-justify-trim:punctuation'>
 
-<div class=WordSection1 style='layout-grid:15.6pt'>
 
+
+
+
+
+<div class=WordSection1 style='layout-grid:15.6pt'>
+<div class="a4-container">
 <p class=MsoNormal align=center style='text-align:center;line-height:150%'><b><span
 style='font-size:16.0pt;line-height:150%;font-family:Times'>SHUYANG BIAN CV</span></b></p>
 
@@ -80,22 +143,20 @@ line-height:150%;font-family:Times'>&nbsp;</span></b></p>
 
 <p class=MsoNormal style='line-height:150%;layout-grid-mode:char'><b><span
 style='font-size:14.0pt;line-height:150%;font-family:Times'>EDUCATION</span></b></p>
+<div class="education-entry">
+    <div class="institution">Duke-NUS Medical School, MD Programme</div>
+    <div class="dates">Jul 2024 –</div>
+</div>
 
-<p class=MsoNormal style='line-height:150%;layout-grid-mode:char'><span
-style='font-size:12.0pt;line-height:150%;font-family:Times'>Duke-NUS Medical
-School, MD Programme                                       Jul 2024 –</span></p>
+<div class="education-entry">
+    <div class="institution">Emory University, Biology and Computer Science (3.97)</div>
+    <div class="dates">Aug 2021 – May 2024</div>
+</div>
 
-<p class=MsoNormal style='line-height:150%;layout-grid-mode:char'><span
-style='font-size:12.0pt;line-height:150%;font-family:Times'>Emory University, Biology
-and Computer Science (3.97)</span>                     <span style='font-size:
-12.0pt;line-height:150%;font-family:Times'>Aug 2021 – May 2024</span></p>
-
-<p class=MsoNormal style='line-height:150%;layout-grid-mode:char'><span
-style='font-size:12.0pt;line-height:150%;font-family:Times'>New York University
-(3.96)</span>                  <span style='font-size:12.0pt;line-height:150%;
-font-family:Times'> </span>                                               <span
-style='font-size:12.0pt;line-height:150%;font-family:Times'>Aug 2020 – June
-2021</span></p>
+<div class="education-entry">
+    <div class="institution">New York University (3.96)</div>
+    <div class="dates">Aug 2020 – June 2021</div>
+</div>
 
 <p class=MsoNormal style='line-height:150%;layout-grid-mode:char'><span
 style='font-size:12.0pt;line-height:150%;font-family:Times'>&nbsp;</span></p>
@@ -209,7 +270,8 @@ damage</span></p>
 
 <p class=MsoNormal style='line-height:150%;layout-grid-mode:char'><span
 style='font-size:12.0pt;line-height:150%;font-family:Times'>&nbsp;</span></p>
-
+</div>
+<div class="a4-container">
 <p class=MsoNormal style='line-height:150%;layout-grid-mode:char'><b><span
 style='font-size:14.0pt;line-height:150%;font-family:Times'>SERVICE</span></b></p>
 
@@ -302,8 +364,6 @@ created, and promoted new self-care strategies</span></p>
 <p class=MsoNormal style='line-height:150%;layout-grid-mode:char'><span
 style='font-size:12.0pt;line-height:150%;font-family:Times'>&nbsp;</span></p>
 
-<p class=MsoNormal style='line-height:150%'><b><span style='font-size:14.0pt;
-line-height:150%;font-family:Times'>&nbsp;</span></b></p>
 
 <p class=MsoNormal style='line-height:150%;layout-grid-mode:char'><b><span
 style='font-size:14.0pt;line-height:150%;font-family:Times'>EXTRACURRICULAR
@@ -357,6 +417,27 @@ with new program captain selection</span></p>
 <p class=MsoNormal style='line-height:150%;layout-grid-mode:char'><span
 style='font-size:12.0pt;line-height:150%;font-family:Times'>•      Assisted
 with student mentor interview</span></p>
+
+<p class=MsoNormal style='line-height:150%;layout-grid-mode:char'><span
+style='font-size:12.0pt;line-height:150%;font-family:Times'>&nbsp;</span></p>
+<p class=MsoNormal style='line-height:150%;layout-grid-mode:char'><span
+style='font-size:12.0pt;line-height:150%;font-family:Times'>&nbsp;</span></p>
+<p class=MsoNormal style='line-height:150%;layout-grid-mode:char'><span
+style='font-size:12.0pt;line-height:150%;font-family:Times'>&nbsp;</span></p>
+<p class=MsoNormal style='line-height:150%;layout-grid-mode:char'><span
+style='font-size:12.0pt;line-height:150%;font-family:Times'>&nbsp;</span></p>
+
+
+<p class=MsoNormal style='line-height:150%;layout-grid-mode:char'><span
+style='font-size:12.0pt;line-height:150%;font-family:Times'>&nbsp;</span></p>
+<p class=MsoNormal style='line-height:150%;layout-grid-mode:char'><span
+style='font-size:12.0pt;line-height:150%;font-family:Times'>&nbsp;</span></p>
+<p class=MsoNormal style='line-height:150%;layout-grid-mode:char'><span
+style='font-size:12.0pt;line-height:150%;font-family:Times'>&nbsp;</span></p>
+
+
+</div>
+<div class="a4-container">
 
 <p class=MsoNormal style='line-height:150%;layout-grid-mode:char'><b><span
 style='font-size:12.0pt;line-height:150%;font-family:Times'>Participant
@@ -509,6 +590,17 @@ Luo, <b>S Bian</b>, Y Huang, F Hassounah, Q Yue, C John, X Wang, H Cai.
 &quot;Activation BKa channel prevented high glucose-induced oxidative stress in
 human proximal tubular cells.&quot; Abstract. 2023 ASN.</span></p>
 
+
+<p class=MsoNormal style='line-height:150%;layout-grid-mode:char'><span
+style='font-size:12.0pt;line-height:150%;font-family:Times'>&nbsp;</span></p>
+<p class=MsoNormal style='line-height:150%;layout-grid-mode:char'><span
+style='font-size:12.0pt;line-height:150%;font-family:Times'>&nbsp;</span></p>
+<p class=MsoNormal style='line-height:150%;layout-grid-mode:char'><span
+style='font-size:12.0pt;line-height:150%;font-family:Times'>&nbsp;</span></p>
+
+
+</div>
+<div class="a4-container">
 <p class=MsoListParagraph style='margin-left:.5in;text-indent:-.25in;
 line-height:150%;layout-grid-mode:char'><span style='font-size:12.0pt;
 line-height:150%;font-family:Times'>[8]<span style='font:7.0pt "Times New Roman"'>&nbsp;
@@ -651,6 +743,16 @@ for generative output of decisions. </span></p>
 <p class=MsoNormal style='line-height:150%;layout-grid-mode:char'><span
 style='font-size:12.0pt;line-height:150%;font-family:Times'>&nbsp;</span></p>
 
+<p class=MsoNormal style='line-height:150%;layout-grid-mode:char'><span
+style='font-size:12.0pt;line-height:150%;font-family:Times'>&nbsp;</span></p>
+<p class=MsoNormal style='line-height:150%;layout-grid-mode:char'><span
+style='font-size:12.0pt;line-height:150%;font-family:Times'>&nbsp;</span></p>
+<p class=MsoNormal style='line-height:150%;layout-grid-mode:char'><span
+style='font-size:12.0pt;line-height:150%;font-family:Times'>&nbsp;</span></p>
+
+
+</div>
+<div class="a4-container">
 <p class=MsoNormal style='line-height:150%;layout-grid-mode:char'><b><span
 style='font-size:14.0pt;line-height:150%;font-family:Times'>SKILLS</span></b></p>
 
@@ -676,7 +778,7 @@ style='font-size:12.0pt;line-height:150%;font-family:Times'>Languages: Proficien
 in English, Chinese. Experience in Spanish and Japanese. </span></p>
 
 </div>
-
+</div>
 </body>
 
 </html>
