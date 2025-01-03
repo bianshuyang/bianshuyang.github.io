@@ -2,7 +2,6 @@
 
 <head>
 <meta http-equiv=Content-Type content="text/html; charset=utf-8">
-<meta name=Generator content="Microsoft Word 15 (filtered)">
 <style>
 
 
@@ -15,7 +14,7 @@
         /* Container for the content */
         .a4-container {
             width: 21cm; /* A4 width in centimeters */
-            height: 29.7cm; /* A4 height in centimeters */
+            height: 28.7cm; /* A4 height in centimeters */
             margin: 0 auto; /* Centers the container horizontally */
             padding: 2cm; /* Optional padding inside the page */
             box-sizing: border-box;
@@ -120,8 +119,30 @@ ul
         margin-left: 0; 
     }
 
-</style>
+@media print {
+      body * {
+        visibility: hidden; /* Hide everything on the page except #print-area */
+      }
 
+      #print-area, #print-area * {
+        visibility: visible;
+      }
+
+      #print-area {
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+    }
+
+
+</style>
+<script>
+    // JavaScript to handle the print action
+    function printContent() {
+      window.print(); // Opens the print dialog
+    }
+  </script>
 </head>
 
 
@@ -134,6 +155,8 @@ text-justify-trim:punctuation'>
 
 
 <div class=WordSection1 style='layout-grid:15.6pt'>
+  <button onclick="printContent()">Print</button>
+  <div id="print-area">
 <div class="a4-container">
 <p class=MsoNormal align=center style='text-align:center;line-height:150%'><b><span
 style='font-size:16.0pt;line-height:150%;font-family:Times'>SHUYANG BIAN CV</span></b></p>
@@ -777,6 +800,8 @@ in Tableau and GraphPad Prism.</span></p>
 style='font-size:12.0pt;line-height:150%;font-family:Times'>Languages: Proficient
 in English, Chinese. Experience in Spanish and Japanese. </span></p>
 
+</div>
+</div>
 </div>
 </div>
 </body>
