@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic CSV Quiz</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 700px; /* Increased max-width for more complex UI */
+            text-align: center;
+        }
+
+        h1, h2, h3 {
+            color: #1877f2;
+        }
+
+        button, input[type="file"], select {
+            background-color: #1877f2;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        button:hover, input[type="file"]:hover, select:hover {
+            background-color: #166fe5;
+        }
+        
+        input[type="checkbox"] {
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+        .checkbox-label {
+            vertical-align: middle;
+            font-size: 0.9em;
+        }
+
+
+        input[type="file"] {
+            display: block;
+            margin: 10px auto;
+        }
+
+        select {
+            min-width: 200px;
+            text-align: center;
+        }
+        .config-label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+
+        .question-area, .pairing-area {
+            margin-top: 20px;
+        }
+
+        .mcq-options button, .pair-item {
+            display: block;
+            width: calc(100% - 22px); /* Account for padding and border */
+            background-color: #e4e6eb;
+            color: #050505;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 0.95em;
+        }
+
+        .mcq-options button:hover, .pair-item:hover {
+            background-color: #dcdfe3;
+        }
+
+        .mcq-options button.correct {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .mcq-options button.incorrect {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .pairing-grid {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .column {
+            width: 48%;
+            display: flex;
+            flex-direction: column;
+        }
+        .column h3 {
+            font-size: 1em;
+            margin-bottom: 5px;
+        }
+
+        .pair-item.selected {
+            background-color: #1877f2;
+            color: white;
+            border-color: #1877f2;
+        }
+
+        .pair-item.matched {
+            background-color: #4caf50 !important;
+            color: white !important;
+            opacity: 0.7;
+            pointer-events: none; /* Disable further clicks */
+        }
+         .pair-item.incorrect-match {
+            background-color: #f44336 !important;
+            color: white !important;
+        }
+
+        #feedback, #pairing-feedback {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        #next-question, #next-pairing-set, .nav-button { /* Shared style for navigation buttons */
+            background-color: #42b72a;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        #next-question:hover, #next-pairing-set:hover, .nav-button:hover {
+            background-color: #3aa822;
+        }
+
+        #progress-bar-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin-top: 20px;
+            overflow: hidden; /* Ensures the inner bar respects the border radius */
+        }
+
+        #progress-bar {
+            width: 0%;
+            height: 20px;
+            background-color: #4caf50;
+            text-align: center;
+            line-height: 20px;
+            color: white;
+            border-radius: 5px; /* Match container's border radius */
+            transition: width 0.3s ease-in-out;
+        }
+
+        #proficiency-message {
+            margin-top: 15px;
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        .hidden {
+            display: none;
+        }
+        #csv-info {
+            font-style: italic;
+            margin-bottom: 15px;
+            color: #555;
+        }
+        #mcq-context-feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            text-align: left;
+            font-size: 0.9em; /* Slightly smaller text for context */
+        }
+        #mcq-context-feedback h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #1877f2;
+            font-size: 1.1em;
+        }
+        .context-table {
+            /* Using CSS grid for a simple key-value layout */
+            display: grid;
+            grid-template-columns: auto 1fr; /* Header column auto-sizes, value takes rest */
+            gap: 5px 10px; /* Row gap, column gap */
+        }
+        .context-header {
+            font-weight: bold;
+            color: #555;
+            padding-right: 10px; /* Space between header and value */
+            text-align: right;
+        }
+        .context-value {
+            /* Highlighting will be applied via inline styles from JS */
+            padding: 3px;
+            border-radius: 3px;
+        }
+        .context-value.highlight-question {
+            background-color: #ffe0b2; /* Light orange for question part */
+            font-weight: bold;
+        }
+        .context-value.highlight-answer {
+            background-color: #c8e6c9; /* Light green for answer part */
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dynamic CSV Quiz</h1>
+
+        <div id="file-upload-area">
+            <h2>Upload CSV File</h2>
+            <input type="file" id="csv-file-input" accept=".csv" onchange="handleFileUpload(event)">
+            <p id="csv-info">No CSV file loaded.</p>
+        </div>
+
+        <div id="module-selection-area" class="hidden">
+            <h2>Select a Module (Data Rows)</h2>
+            <button class="nav-button" onclick="goBackToFileUpload()">Back to File Upload</button>
+        </div>
+
+        <div id="quiz-config-area" class="hidden">
+            <h2>Configure Quiz</h2>
+            <div>
+                <label for="quiz-type-select" class="config-label">Select Quiz Type:</label>
+                <select id="quiz-type-select" onchange="toggleColumnSelectors()">
+                    <option value="">--Select Type--</option>
+                    <option value="mcq">Multiple Choice (Manual Columns)</option>
+                    <option value="comprehensive_mcq">Comprehensive Random MCQ (All Columns)</option>
+                    <option value="pairing">Tapping Pairs (Manual Columns)</option>
+                </select>
+            </div>
+
+            <div id="mcq-column-config" class="hidden">
+                 <h3 style="font-size: 1em; color: #555;">For Multiple Choice (Manual Columns):</h3>
+                <label for="mcq-question-col" class="config-label">Question Based On (Column):</label>
+                <select id="mcq-question-col"></select>
+                <label for="mcq-answer-col" class="config-label">Answer Is From (Column):</label>
+                <select id="mcq-answer-col"></select>
+            </div>
+            
+            <div id="comprehensive_mcq_info" class="hidden" style="margin-top:10px; font-style:italic; color: #555;">
+                Comprehensive Random MCQ will test all column associations for the selected module.
+            </div>
+
+            <div id="pairing-column-config" class="hidden">
+                <h3 style="font-size: 1em; color: #555;">For Tapping Pairs (Manual Columns):</h3>
+                <label for="pairing-col1" class="config-label">First Item Column:</label>
+                <select id="pairing-col1"></select>
+                <label for="pairing-col2" class="config-label">Second Item Column:</label>
+                <select id="pairing-col2"></select>
+            </div>
+            <button id="start-quiz-button" class="nav-button" onclick="startQuiz()" disabled>Start Quiz with these Settings</button>
+            <button class="nav-button" onclick="goBackToModuleSelection()">Back to Module Selection</button>
+        </div>
+
+
+        <div id="quiz-area" class="hidden">
+            <h2 id="question-title"></h2>
+
+            <div id="mcq-question-area" class="question-area hidden">
+                <p id="mcq-question-text"></p>
+                <div id="mcq-options" class="mcq-options"></div>
+                <div id="feedback"></div>
+                <div id="mcq-context-feedback" class="hidden"></div> <button id="next-question" class="hidden" onclick="nextMCQ()">Next Question</button>
+            </div>
+
+
+            <div id="pairing-question-area" class="question-area hidden">
+                <p>Tap an item from each column to make a pair:</p>
+                <div class="pairing-grid">
+                    <div id="column1-area" class="column">
+                        <h3 id="column1-name"></h3>
+                        <div id="column1-items"></div>
+                    </div>
+                    <div id="column2-area" class="column">
+                        <h3 id="column2-name"></h3>
+                        <div id="column2-items"></div>
+                    </div>
+                </div>
+                <div id="pairing-feedback"></div>
+                <div id="progress-bar-container">
+                    <div id="progress-bar">0%</div>
+                </div>
+                <div id="proficiency-message" class="hidden">Congratulations! You've reached proficiency!</div>
+                <button id="next-pairing-set" class="hidden" onclick="loadPairingSet()">Next Set</button>
+            </div>
+            <button class="nav-button" onclick="goBackToQuizConfig()">Back to Quiz Configuration</button>
+        </div>
+    </div>
+
+    <script>
+        // Add these near your other global variable declarations
+        let currentItemForFeedback;
+        let questionColumnKeyForFeedback; // The key of the column used as the question stem
+        let answerColumnKeyForFeedback;   // The key of the column that held the correct answer
+        let allDataItems = []; 
+        let csvHeaders = []; 
+        let currentModuleItems = []; 
+        let currentQuestionIndex = 0; // For manual MCQ and comprehensive MCQ index
+        let score = 0;
+        let configuredQuizType = ''; 
+
+        // MCQ configuration
+        let mcqQuestionColumn = '';
+        let mcqAnswerColumn = '';
+
+        // Pairing configuration
+        let pairingColumn1 = '';
+        let pairingColumn2 = '';
+        
+        // Comprehensive MCQ Mode
+        let isComprehensiveMode = false; // NEW: Flag for comprehensive mode
+        let comprehensiveQuestionQueue = []; // NEW: Queue for comprehensive questions
+        // currentQuestionIndex will be used for this queue as well.
+
+        // For Tapping Pairs
+        let pairingSet = []; 
+        let selectedItem1 = null; 
+        let selectedItem2 = null; 
+        let pairsMadeCorrectly = 0;
+        const PAIRS_PER_SET_DISPLAY = 5; 
+        let recentPairingHistory = [];
+        const PROFICIENCY_HISTORY_LENGTH = 12;
+        const PROFICIENCY_ERROR_RATE = 0.10;
+
+        // DOM Elements
+        const fileUploadArea = document.getElementById('file-upload-area');
+        const csvInfo = document.getElementById('csv-info');
+        const moduleSelectionArea = document.getElementById('module-selection-area');
+        const quizConfigArea = document.getElementById('quiz-config-area');
+        const quizTypeSelect = document.getElementById('quiz-type-select');
+        const mcqColumnConfigDiv = document.getElementById('mcq-column-config');
+        const comprehensiveMCQInfoDiv = document.getElementById('comprehensive_mcq_info'); // NEW
+        const mcqQuestionColSelect = document.getElementById('mcq-question-col');
+        const mcqAnswerColSelect = document.getElementById('mcq-answer-col');
+        const pairingColumnConfigDiv = document.getElementById('pairing-column-config');
+        const pairingCol1Select = document.getElementById('pairing-col1');
+        const pairingCol2Select = document.getElementById('pairing-col2');
+        const startQuizButton = document.getElementById('start-quiz-button');
+
+        const quizArea = document.getElementById('quiz-area');
+        const questionTitle = document.getElementById('question-title');
+
+        const mcqQuestionArea = document.getElementById('mcq-question-area');
+        const mcqQuestionText = document.getElementById('mcq-question-text');
+        const mcqOptionsContainer = document.getElementById('mcq-options');
+        const feedbackDiv = document.getElementById('feedback');
+        const nextMCQButton = document.getElementById('next-question');
+
+        const pairingQuestionArea = document.getElementById('pairing-question-area');
+        const column1Name = document.getElementById('column1-name');
+        const column1ItemsDiv = document.getElementById('column1-items');
+        const column2Name = document.getElementById('column2-name');
+        const column2ItemsDiv = document.getElementById('column2-items');
+
+        const pairingFeedbackDiv = document.getElementById('pairing-feedback');
+        const nextPairingSetButton = document.getElementById('next-pairing-set');
+        const progressBar = document.getElementById('progress-bar');
+        const proficiencyMessage = document.getElementById('proficiency-message');
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                Papa.parse(file, {
+                    header: true, // Converts rows to objects with header keys
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        if (results.data && results.data.length > 0) {
+                            allDataItems = results.data;
+                            csvHeaders = results.meta.fields; // Get headers from Papa Parse
+
+                            csvInfo.textContent = `Loaded <span class="math-inline">\{file\.name\} \(</span>{allDataItems.length} data rows). Headers: ${csvHeaders.join(', ')}`;
+                            fileUploadArea.classList.add('hidden');
+                            createModules();
+                            moduleSelectionArea.classList.remove('hidden');
+                            resetQuizConfig();
+                        } else {
+                            csvInfo.textContent = "Failed to parse CSV, CSV is empty, or an error occurred.";
+                            if(results.errors.length > 0) {
+                                console.error("CSV Parsing Errors:", results.errors);
+                                let errorMessages = results.errors.map(err => err.message).join('; ');
+                                csvInfo.textContent += ` Errors: ${errorMessages}`;
+                            }
+                            allDataItems = [];
+                            csvHeaders = [];
+                        }
+                    },
+                    error: function(error) {
+                        csvInfo.textContent = `Error parsing CSV: ${error.message}`;
+                        console.error("Papa Parse Error:", error);
+                        allDataItems = [];
+                        csvHeaders = [];
+                    }
+                });
+            }
+        }
+        
+        function resetQuizConfig() {
+            quizTypeSelect.value = "";
+            mcqColumnConfigDiv.classList.add('hidden');
+            pairingColumnConfigDiv.classList.add('hidden');
+            comprehensiveMCQInfoDiv.classList.add('hidden'); // NEW
+            [mcqQuestionColSelect, mcqAnswerColSelect, pairingCol1Select, pairingCol2Select].forEach(sel => sel.innerHTML = '');
+            startQuizButton.disabled = true;
+            isComprehensiveMode = false; // NEW
+        }
+
+
+        function createModules() {
+            const totalItems = allDataItems.length;
+            const itemsPerModule = 12; 
+            const numModules = Math.ceil(totalItems / itemsPerModule);
+            moduleSelectionArea.innerHTML = '<h2>Select a Module (Data Rows)</h2>'; 
+
+            for (let i = 0; i < numModules; i++) {
+                const start = i * itemsPerModule;
+                const end = Math.min(start + itemsPerModule, totalItems);
+                const button = document.createElement('button');
+                button.textContent = `Module ${i + 1} (Rows ${start + 1}-${end})`;
+                button.onclick = () => selectModule(i, itemsPerModule);
+                moduleSelectionArea.appendChild(button);
+            }
+            const allButton = document.createElement('button');
+            allButton.textContent = `All Rows (${totalItems})`;
+            allButton.onclick = () => selectModule(-1, totalItems);
+            moduleSelectionArea.appendChild(allButton);
+            
+            const backButton = document.createElement('button');
+            backButton.classList.add('nav-button');
+            backButton.textContent = 'Back to File Upload';
+            backButton.onclick = goBackToFileUpload;
+            moduleSelectionArea.appendChild(backButton);
+        }
+
+        function selectModule(moduleIndex, itemsPerModule) {
+            if (moduleIndex === -1) {
+                currentModuleItems = [...allDataItems];
+            } else {
+                const start = moduleIndex * itemsPerModule;
+                const end = Math.min(start + itemsPerModule, allDataItems.length);
+                currentModuleItems = allDataItems.slice(start, end);
+            }
+            shuffleArray(currentModuleItems);
+            moduleSelectionArea.classList.add('hidden');
+            populateColumnSelectors();
+            quizConfigArea.classList.remove('hidden');
+            quizTypeSelect.value = ""; // Reset quiz type selection
+            toggleColumnSelectors(); // Update UI based on empty selection
+        }
+        
+        function populateColumnSelectors() {
+            [mcqQuestionColSelect, mcqAnswerColSelect, pairingCol1Select, pairingCol2Select].forEach(select => {
+                select.innerHTML = '<option value="">--Select Column--</option>'; 
+                csvHeaders.forEach(header => {
+                    const option = document.createElement('option');
+                    option.value = header;
+                    option.textContent = header;
+                    select.appendChild(option.cloneNode(true)); // Use cloneNode for mcq selects
+                });
+            });
+        }
+
+        function toggleColumnSelectors() {
+            configuredQuizType = quizTypeSelect.value;
+            mcqColumnConfigDiv.classList.add('hidden');
+            pairingColumnConfigDiv.classList.add('hidden');
+            comprehensiveMCQInfoDiv.classList.add('hidden'); // NEW
+            startQuizButton.disabled = true;
+
+            if (configuredQuizType === 'mcq') {
+                mcqColumnConfigDiv.classList.remove('hidden');
+            } else if (configuredQuizType === 'comprehensive_mcq') { // NEW
+                comprehensiveMCQInfoDiv.classList.remove('hidden');
+                isComprehensiveMode = true; 
+            } else if (configuredQuizType === 'pairing') {
+                pairingColumnConfigDiv.classList.remove('hidden');
+            }
+            checkStartButtonStatus();
+        }
+        
+        [mcqQuestionColSelect, mcqAnswerColSelect, pairingCol1Select, pairingCol2Select].forEach(sel => {
+            sel.onchange = checkStartButtonStatus;
+        });
+
+        function checkStartButtonStatus() {
+            if (configuredQuizType === 'mcq') {
+                isComprehensiveMode = false; // Ensure this is off
+                startQuizButton.disabled = !(mcqQuestionColSelect.value && mcqAnswerColSelect.value && mcqQuestionColSelect.value !== mcqAnswerColSelect.value);
+                 if (mcqQuestionColSelect.value && mcqAnswerColSelect.value && mcqQuestionColSelect.value === mcqAnswerColSelect.value) {
+                    // alert("Question column and Answer column cannot be the same for MCQ."); // Can be annoying, just disable button
+                }
+            } else if (configuredQuizType === 'comprehensive_mcq') { // NEW
+                isComprehensiveMode = true;
+                startQuizButton.disabled = false; // Enable immediately for comprehensive
+            }
+            else if (configuredQuizType === 'pairing') {
+                isComprehensiveMode = false; // Ensure this is off
+                startQuizButton.disabled = !(pairingCol1Select.value && pairingCol2Select.value && pairingCol1Select.value !== pairingCol2Select.value);
+                 if (pairingCol1Select.value && pairingCol2Select.value && pairingCol1Select.value === pairingCol2Select.value) {
+                    // alert("Pairing columns cannot be the same.");
+                }
+            } else {
+                startQuizButton.disabled = true;
+            }
+        }
+
+        // NEW: Function to generate comprehensive question queue
+        function generateComprehensiveQuestions() {
+            comprehensiveQuestionQueue = [];
+            if (currentModuleItems.length === 0 || csvHeaders.length < 2) {
+                return; // Not enough data
+            }
+            currentModuleItems.forEach(item => {
+                for (let i = 0; i < csvHeaders.length; i++) {
+                    for (let j = 0; j < csvHeaders.length; j++) {
+                        if (i === j) continue; // Don't pair a column with itself
+
+                        const questionCol = csvHeaders[i];
+                        const answerCol = csvHeaders[j];
+                        // Ensure the item actually has these properties (might be sparse data)
+                        if (item.hasOwnProperty(questionCol) && item.hasOwnProperty(answerCol)) {
+                             comprehensiveQuestionQueue.push({
+                                item: item,
+                                questionColKey: questionCol,
+                                answerColKey: answerCol
+                            });
+                        }
+                    }
+                }
+            });
+            shuffleArray(comprehensiveQuestionQueue);
+            console.log(`Generated ${comprehensiveQuestionQueue.length} comprehensive questions.`);
+        }
+
+
+        function startQuiz() {
+            resetQuizState(); // General quiz state reset
+            
+            if (configuredQuizType === 'mcq') {
+                mcqQuestionColumn = mcqQuestionColSelect.value;
+                mcqAnswerColumn = mcqAnswerColSelect.value;
+                if (!mcqQuestionColumn || !mcqAnswerColumn || mcqQuestionColumn === mcqAnswerColumn) {
+                    alert("Please select two different columns for Manual MCQ.");
+                    return;
+                }
+                isComprehensiveMode = false;
+                questionTitle.textContent = `MCQ: ${mcqQuestionColumn} vs ${mcqAnswerColumn}`;
+                mcqQuestionArea.classList.remove('hidden');
+                pairingQuestionArea.classList.add('hidden');
+                loadMCQ();
+
+            } else if (configuredQuizType === 'comprehensive_mcq') { // NEW
+                isComprehensiveMode = true;
+                generateComprehensiveQuestions();
+                if (comprehensiveQuestionQueue.length === 0) {
+                    alert("Not enough data or columns to generate a comprehensive quiz for this module.");
+                    goBackToQuizConfig();
+                    return;
+                }
+                questionTitle.textContent = `Comprehensive Random MCQ (All Columns)`;
+                mcqQuestionArea.classList.remove('hidden');
+                pairingQuestionArea.classList.add('hidden');
+                loadMCQ();
+
+            } else if (configuredQuizType === 'pairing') {
+                pairingColumn1 = pairingCol1Select.value;
+                pairingColumn2 = pairingCol2Select.value;
+                 if (!pairingColumn1 || !pairingColumn2 || pairingColumn1 === pairingColumn2) {
+                    alert("Please select two different columns for Pairing.");
+                    return;
+                }
+                isComprehensiveMode = false;
+                questionTitle.textContent = `Tapping Pairs: ${pairingColumn1} vs ${pairingColumn2}`;
+                mcqQuestionArea.classList.add('hidden');
+                pairingQuestionArea.classList.remove('hidden');
+                proficiencyMessage.classList.add('hidden'); // For tapping pairs
+                loadPairingSet();
+            } else {
+                alert("Please select a quiz type and configure columns.");
+                return;
+            }
+
+            quizConfigArea.classList.add('hidden');
+            quizArea.classList.remove('hidden');
+        }
+        
+        function resetQuizState() {
+            currentQuestionIndex = 0; // Used for both manual MCQ and comprehensive index
+            score = 0;
+            feedbackDiv.textContent = '';
+            pairingFeedbackDiv.textContent = '';
+            nextMCQButton.classList.add('hidden');
+            nextPairingSetButton.classList.add('hidden');
+            selectedItem1 = null;
+            selectedItem2 = null;
+            pairsMadeCorrectly = 0;
+            recentPairingHistory = []; 
+            updateProgressBar(); 
+            proficiencyMessage.classList.add('hidden');
+            // comprehensiveQuestionQueue = []; // Don't reset here, generate on startQuiz if needed
+        }
+
+        // --- Navigation Functions ---
+        function goBackToFileUpload() {
+            moduleSelectionArea.classList.add('hidden');
+            quizConfigArea.classList.add('hidden'); // Make sure config is hidden too
+            quizArea.classList.add('hidden'); // Hide quiz area
+            fileUploadArea.classList.remove('hidden');
+            allDataItems = [];
+            csvHeaders = [];
+            currentModuleItems = [];
+            csvInfo.textContent = "No CSV file loaded.";
+            document.getElementById('csv-file-input').value = ""; 
+            resetQuizConfig();
+        }
+
+        function goBackToModuleSelection() {
+            quizConfigArea.classList.add('hidden');
+            quizArea.classList.add('hidden'); // Hide quiz area
+            moduleSelectionArea.classList.remove('hidden');
+            resetQuizConfig(); // Reset selections made in config
+        }
+        
+        function goBackToQuizConfig() {
+            quizArea.classList.add('hidden');
+            mcqQuestionArea.classList.add('hidden'); // Ensure specific quiz types are hidden
+            pairingQuestionArea.classList.add('hidden');
+            quizConfigArea.classList.remove('hidden');
+            // quizTypeSelect.value remains, allowing quick restart or reconfig
+        }
+
+
+        // --- MCQ Functions ---
+        function loadMCQ() {
+            mcqOptionsContainer.innerHTML = '';
+            feedbackDiv.textContent = '';
+            nextMCQButton.classList.add('hidden');
+            document.getElementById('mcq-context-feedback').classList.add('hidden'); // Also hide context initially
+
+            let currentItem, questionColForMCQ, answerColForMCQ, questionTextContent, correctAnswer;
+            const options = [];
+
+            if (isComprehensiveMode) {
+                if (currentQuestionIndex >= comprehensiveQuestionQueue.length) {
+                    feedbackDiv.textContent = "You've completed all comprehensive questions!";
+                    feedbackDiv.style.color = "blue";
+                    nextMCQButton.classList.add('hidden');
+                    // No more questions, so ensure context feedback is also cleared/hidden
+                    document.getElementById('mcq-context-feedback').classList.add('hidden');
+                    return;
+                }
+                const qData = comprehensiveQuestionQueue[currentQuestionIndex]; // Define qData
+
+                if (!qData || !qData.item) { // Added a check for qData and qData.item
+                    feedbackDiv.textContent = "Error loading comprehensive question data.";
+                    console.error("Invalid qData:", qData, "at index:", currentQuestionIndex);
+                    nextMCQButton.classList.add('hidden');
+                    return;
+                }
+
+                currentItem = qData.item;
+                questionColForMCQ = qData.questionColKey;
+                answerColForMCQ = qData.answerColKey;
+
+                // Determine the question text. You might want to vary this.
+                // Example: "What is the [answerColKey] for [questionColKey] '[value from questionColKey]'?"
+                questionTextContent = `What is the "${answerColForMCQ}" for "${currentItem[questionColForMCQ]}"?`;
+                correctAnswer = currentItem[answerColForMCQ];
+
+                // Store context for feedback using the now-defined qData
+                currentItemForFeedback = qData.item; // This line will now work
+                questionColumnKeyForFeedback = qData.questionColKey;
+                answerColumnKeyForFeedback = qData.answerColKey;
+
+            } else { // Manual MCQ
+                if (currentQuestionIndex >= currentModuleItems.length) {
+                    feedbackDiv.textContent = "You've completed all questions for this module!";
+                    feedbackDiv.style.color = "blue";
+                    nextMCQButton.classList.add('hidden');
+                     document.getElementById('mcq-context-feedback').classList.add('hidden');
+                    return;
+                }
+                currentItemForFeedback = currentModuleItems[currentQuestionIndex];
+                currentItem = currentItemForFeedback; // Assign to currentItem for consistency
+
+                const askForAnswerCol = Math.random() < 0.5; // Randomize question direction
+
+                if (askForAnswerCol) {
+                    questionColForMCQ = mcqQuestionColumn; // e.g., "Term"
+                    answerColForMCQ = mcqAnswerColumn;     // e.g., "Definition"
+                    // Question: "What is the Definition for Term 'XYZ'?"
+                    // Correct Answer is from mcqAnswerColumn
+                    questionTextContent = `What is the "${answerColForMCQ}" for "${currentItem[questionColForMCQ]}"?`;
+                    correctAnswer = currentItem[answerColForMCQ];
+
+                    questionColumnKeyForFeedback = questionColForMCQ;
+                    answerColumnKeyForFeedback = answerColForMCQ;
+                } else {
+                    // Question: "Which Term has 'ABC' as its Definition?"
+                    // Correct Answer is from mcqQuestionColumn
+                    questionColForMCQ = mcqAnswerColumn;     // The "given" part is from mcqAnswerColumn value
+                    answerColForMCQ = mcqQuestionColumn;   // The "answer" is a value from mcqQuestionColumn
+                    questionTextContent = `Which "${answerColForMCQ}" corresponds to the ${questionColForMCQ} "${currentItem[questionColForMCQ]}"?`;
+                    correctAnswer = currentItem[answerColForMCQ]; // The value from the column we are asking about
+
+                    questionColumnKeyForFeedback = questionColForMCQ; // This was the "given" column in the question text
+                    answerColumnKeyForFeedback = answerColForMCQ;   // This was the column for the correct answer
+                }
+            }
+
+            // Ensure correctAnswer is defined before proceeding
+            if (typeof correctAnswer === 'undefined') {
+                console.error("Correct answer is undefined.", {currentItem, answerColForMCQ});
+                feedbackDiv.textContent = "Error: Could not determine the correct answer for the question.";
+                // Potentially skip adding options or return
+                return;
+            }
+
+            options.push(correctAnswer);
+            
+            const allPossibleAnswers = currentModuleItems
+                                        .map(item => item[answerColForMCQ])
+                                        .filter(val => val !== undefined);
+
+            const uniqueIncorrectAnswers = [...new Set(allPossibleAnswers)]
+                                        .filter(ans => ans !== correctAnswer);
+            shuffleArray(uniqueIncorrectAnswers);
+            
+            let addedOptionsCount = 1; // Starts with 1 for the correct answer
+            for (const incorrect of uniqueIncorrectAnswers) {
+                if (addedOptionsCount >= 4) break;
+                options.push(incorrect);
+                addedOptionsCount++;
+            }
+            
+            // Fallback if not enough options from currentModuleItems
+            if (addedOptionsCount < Math.min(4, new Set(allPossibleAnswers).size) && addedOptionsCount < 4) {
+                let backupOptions = [...new Set(allDataItems.map(item => item[answerColForMCQ]).filter(val => val !== undefined))];
+                backupOptions = backupOptions.filter(opt => !options.includes(opt)); // Exclude already added options
+                shuffleArray(backupOptions);
+                for (const backupOpt of backupOptions) {
+                    if (addedOptionsCount >= 4) break;
+                    if (!options.includes(backupOpt)) { // Double check not already included
+                        options.push(backupOpt);
+                        addedOptionsCount++;
+                    }
+                }
+            }
+
+            // If only one unique value exists in the answer column for the whole dataset
+            if (options.length === 1 && new Set(allDataItems.map(item => item[answerColForMCQ])).size === 1) {
+                 // Potentially add a message or a dummy option like "No other options available"
+                 // For now, it will just show one option.
+            } else if (options.length < 2 && allPossibleAnswers.length >= 1) { 
+                // This case should be less likely with the above logic but as a fallback
+                const otherOption = allPossibleAnswers.find(opt => opt !== correctAnswer);
+                if (otherOption && !options.includes(otherOption)) {
+                     options.push(otherOption);
+                }
+            }
+
+
+            shuffleArray(options);
+            mcqQuestionText.textContent = questionTextContent;
+            
+            mcqOptionsContainer.innerHTML = ''; // Clear previous options before adding new ones
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.onclick = (event) => checkMCQAnswer(event, String(correctAnswer)); // Ensure correctAnswer is string for comparison if needed
+                mcqOptionsContainer.appendChild(button);
+            });
+
+            // Check if question is impossible (e.g. no options generated)
+            if(options.length === 0){
+                mcqQuestionText.textContent = "Could not generate options for this question.";
+                feedbackDiv.textContent = "Please try the next question or reconfigure.";
+                nextMCQButton.classList.remove('hidden'); // Allow skipping
+            }
+        }
+
+
+        function checkMCQAnswer(event, correctAnswer) {
+            const selectedButton = event.target;
+            const selectedAnswer = selectedButton.textContent;
+            const buttons = mcqOptionsContainer.getElementsByTagName('button');
+            const contextFeedbackDiv = document.getElementById('mcq-context-feedback'); // Get the new div
+
+            contextFeedbackDiv.innerHTML = ''; // Clear previous context
+            contextFeedbackDiv.classList.add('hidden'); // Hide by default
+
+            for (let btn of buttons) {
+                btn.disabled = true;
+            }
+
+            if (selectedAnswer === correctAnswer) {
+                feedbackDiv.textContent = "Correct!";
+                feedbackDiv.style.color = "green";
+                selectedButton.classList.add('correct');
+                score++;
+            } else {
+                feedbackDiv.textContent = `Incorrect. The correct answer is: ${correctAnswer}`;
+                feedbackDiv.style.color = "red";
+                selectedButton.classList.add('incorrect');
+
+                for (let btn of buttons) {
+                    if (btn.textContent === correctAnswer) {
+                        btn.classList.add('correct'); // Highlight the correct option button
+                        break;
+                    }
+                }
+
+                // NEW: Display full row context with highlighting
+                if (currentItemForFeedback && csvHeaders.length > 0 && questionColumnKeyForFeedback && answerColumnKeyForFeedback) {
+                    let contextHTML = '<h4>Full Context for the Question:</h4><div class="context-table">';
+                    csvHeaders.forEach(header => {
+                        const value = currentItemForFeedback[header] !== undefined ? currentItemForFeedback[header] : "N/A";
+                        let valueClass = "context-value";
+                        if (header === questionColumnKeyForFeedback) {
+                            valueClass += ' highlight-question'; 
+                        }
+                        if (header === answerColumnKeyForFeedback) {
+                            // If a column is both question and answer (should not happen with current logic but defensive)
+                            // the answer highlight might take precedence or classes can be combined if CSS is set up for it.
+                            // For now, if it was the answer column, highlight it as answer.
+                            valueClass = valueClass.replace(' highlight-question', ''); // Remove question highlight if it's the answer column
+                            valueClass += ' highlight-answer';
+                        }
+
+                        contextHTML += `<span class="context-header"><span class="math-inline">\{header\}\:</span\> <span class\="</span>{valueClass}">${value}</span>`;
+                    });
+                    contextHTML += '</div>';
+                    contextFeedbackDiv.innerHTML = contextHTML;
+                    contextFeedbackDiv.classList.remove('hidden');
+                }
+            }
+            nextMCQButton.classList.remove('hidden');
+        }
+
+        function nextMCQ() {
+            currentQuestionIndex++; // This index is used for both comprehensive queue and manual module items
+            loadMCQ();
+        }
+
+
+        // --- Tapping Pairs Functions (Largely unchanged but ensured isComprehensiveMode = false for it) ---
+        function loadPairingSet() {
+            pairingFeedbackDiv.textContent = '';
+            nextPairingSetButton.classList.add('hidden');
+            column1ItemsDiv.innerHTML = '';
+            column2ItemsDiv.innerHTML = '';
+            selectedItem1 = null;
+            selectedItem2 = null;
+            pairsMadeCorrectly = 0;
+            proficiencyMessage.classList.add('hidden');
+            
+            if (checkProficiency()) return; 
+
+            shuffleArray(currentModuleItems);
+            pairingSet = currentModuleItems.slice(0, Math.min(PAIRS_PER_SET_DISPLAY, currentModuleItems.length));
+
+            if (pairingSet.length === 0) {
+                 pairingFeedbackDiv.textContent = "No more items in this module for pairing or not enough unique data for selected columns!";
+                 return;
+            }
+
+            column1Name.textContent = pairingColumn1;
+            column2Name.textContent = pairingColumn2;
+
+            const itemsForCol1 = pairingSet.map(p => p[pairingColumn1]).filter(v => v !== undefined);
+            const itemsForCol2 = pairingSet.map(p => p[pairingColumn2]).filter(v => v !== undefined);
+            
+            shuffleArray(itemsForCol1);
+            shuffleArray(itemsForCol2);
+
+            // Ensure we have unique items to display for pairing to make it a fair game
+            const uniqueItemsCol1 = [...new Set(itemsForCol1)].slice(0, PAIRS_PER_SET_DISPLAY);
+            const uniqueItemsCol2 = [...new Set(itemsForCol2)].slice(0, PAIRS_PER_SET_DISPLAY);
+
+
+            uniqueItemsCol1.forEach(itemValue => {
+                const item = document.createElement('button');
+                item.classList.add('pair-item');
+                item.textContent = itemValue;
+                item.dataset.columnKey = pairingColumn1;
+                item.onclick = () => selectPairItem(item, pairingColumn1);
+                column1ItemsDiv.appendChild(item);
+            });
+
+            uniqueItemsCol2.forEach(itemValue => {
+                const item = document.createElement('button');
+                item.classList.add('pair-item');
+                item.textContent = itemValue;
+                item.dataset.columnKey = pairingColumn2;
+                item.onclick = () => selectPairItem(item, pairingColumn2);
+                column2ItemsDiv.appendChild(item);
+            });
+            updateProgressBar();
+        }
+
+        function selectPairItem(itemElement, columnKey) {
+            if (selectedItem1 && selectedItem1.element.classList.contains('incorrect-match')) {
+                selectedItem1.element.classList.remove('incorrect-match');
+            }
+            if (selectedItem2 && selectedItem2.element.classList.contains('incorrect-match')) {
+                selectedItem2.element.classList.remove('incorrect-match');
+            }
+            
+            const value = itemElement.textContent;
+
+            if (columnKey === pairingColumn1) {
+                if (selectedItem1) selectedItem1.element.classList.remove('selected');
+                selectedItem1 = { element: itemElement, value: value, columnKey: columnKey };
+                itemElement.classList.add('selected');
+            } else if (columnKey === pairingColumn2) {
+                if (selectedItem2) selectedItem2.element.classList.remove('selected');
+                selectedItem2 = { element: itemElement, value: value, columnKey: columnKey };
+                itemElement.classList.add('selected');
+            }
+
+            if (selectedItem1 && selectedItem2) {
+                checkPair();
+            }
+        }
+
+        function checkPair() {
+            const isCorrectMatch = pairingSet.some(item => {
+                return item[selectedItem1.columnKey] === selectedItem1.value && item[selectedItem2.columnKey] === selectedItem2.value;
+            });
+
+            let wasCorrectAttempt = false;
+            if (isCorrectMatch) {
+                pairingFeedbackDiv.textContent = "Correct Match!";
+                pairingFeedbackDiv.style.color = "green";
+                selectedItem1.element.classList.add('matched');
+                selectedItem1.element.classList.remove('selected');
+                selectedItem2.element.classList.add('matched');
+                selectedItem2.element.classList.remove('selected');
+                pairsMadeCorrectly++;
+                wasCorrectAttempt = true;
+            } else {
+                pairingFeedbackDiv.textContent = "Incorrect Match. Try again or select different items.";
+                pairingFeedbackDiv.style.color = "red";
+                selectedItem1.element.classList.add('incorrect-match');
+                selectedItem2.element.classList.add('incorrect-match');
+                setTimeout(() => {
+                    if (selectedItem1 && selectedItem1.element.classList.contains('incorrect-match')) {
+                         selectedItem1.element.classList.remove('selected', 'incorrect-match');
+                    }
+                    if (selectedItem2 && selectedItem2.element.classList.contains('incorrect-match')) {
+                        selectedItem2.element.classList.remove('selected', 'incorrect-match');
+                    }
+                     if (selectedItem1 && !selectedItem1.element.classList.contains('matched')) selectedItem1 = null;
+                     if (selectedItem2 && !selectedItem2.element.classList.contains('matched')) selectedItem2 = null;
+
+                     pairingFeedbackDiv.textContent = "Tap an item from each column.";
+                     pairingFeedbackDiv.style.color = "#333"; 
+                }, 1200);
+            }
+
+            recentPairingHistory.push(wasCorrectAttempt);
+            if (recentPairingHistory.length > PROFICIENCY_HISTORY_LENGTH) {
+                recentPairingHistory.shift();
+            }
+            
+            if(wasCorrectAttempt){
+                selectedItem1 = null;
+                selectedItem2 = null;
+            }
+
+            // Check if all items intended for display in this pairing game have been matched.
+            // This logic might need refinement if PAIRS_PER_SET_DISPLAY is smaller than the number of unique items available.
+            // For simplicity, it's checking against PAIRS_PER_SET_DISPLAY or the actual number of unique pairs formed from pairingSet.
+            const actualPairsToMatchInSet = Math.min(PAIRS_PER_SET_DISPLAY, new Set(pairingSet.map(p => `${p[pairingColumn1]}---${p[pairingColumn2]}`)).size);
+
+            if (pairsMadeCorrectly >= actualPairsToMatchInSet && actualPairsToMatchInSet > 0) { 
+                pairingFeedbackDiv.textContent = `Set Complete! You matched all ${actualPairsToMatchInSet} intended pairs for this display.`;
+                pairingFeedbackDiv.style.color = "blue";
+                nextPairingSetButton.classList.remove('hidden');
+                 if (checkProficiency()) return;
+            }
+            updateProgressBar();
+        }
+
+         function updateProgressBar() {
+            const totalPairsInCurrentSet = Math.min(PAIRS_PER_SET_DISPLAY, new Set(pairingSet.map(p => `${p[pairingColumn1]}---${p[pairingColumn2]}`)).size);
+            const progress = totalPairsInCurrentSet > 0 ? (pairsMadeCorrectly / totalPairsInCurrentSet) * 100 : 0;
+            progressBar.style.width = `${progress}%`;
+            progressBar.textContent = `${Math.round(progress)}%`;
+        }
+
+        function checkProficiency() { // This proficiency is for Tapping Pairs mode
+            if (!pairingColumnConfigDiv.classList.contains('hidden')) { // Only run if in pairing mode
+                if (recentPairingHistory.length < PROFICIENCY_HISTORY_LENGTH) {
+                    return false;
+                }
+                const errors = recentPairingHistory.filter(result => !result).length;
+                const errorRate = errors / PROFICIENCY_HISTORY_LENGTH;
+
+                if (errorRate <= PROFICIENCY_ERROR_RATE) {
+                    proficiencyMessage.textContent = `Congratulations! You've reached proficiency in Tapping Pairs with an error rate of ${Math.round(errorRate * 100)}% on the last ${PROFICIENCY_HISTORY_LENGTH} attempts!`;
+                    proficiencyMessage.classList.remove('hidden');
+                    nextPairingSetButton.classList.add('hidden'); 
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        window.onload = () => {};
+    </script>
+</body>
+</html>
